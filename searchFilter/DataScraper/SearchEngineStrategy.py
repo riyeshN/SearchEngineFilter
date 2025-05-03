@@ -62,15 +62,17 @@ class BingSearchStrategy(SearchEngineStrategy):
                 if title in {"Previous", "Next"} or title.startswith("Related searches"):
                     continue
                 print(f"[{kind.upper()}] title: {title}  --  link: {link}")
-                results.append({
-                    "searchEngine": "Bing",
-                    "baseUrl": BASE,
-                    "title": title,
-                    "link": link,
-                    "description": desc,
-                    "is_ad": kind == "ad",
-                    "is_promo": kind == "promo",
-                })
+
+                if title and link and desc:
+                    results.append({
+                        "searchEngine": "Bing",
+                        "baseUrl": BASE,
+                        "title": title,
+                        "link": link,
+                        "description": desc,
+                        "is_ad": kind == "ad",
+                        "is_promo": kind == "promo",
+                    })
 
         return results
 
@@ -110,7 +112,7 @@ class GoogleSearchStrategy(SearchEngineStrategy):
             link = _clean_href(link_tag["href"]) if link_tag else None
             desc = desc_tag.get_text(strip=True) if desc_tag else None
 
-            if title and link:
+            if title and link and desc:
                 print(f"ORG  title: {title}  --  link: {link}")
                 results.append({
                     "searchEngine": "Google",
@@ -137,8 +139,8 @@ class GoogleSearchStrategy(SearchEngineStrategy):
             link = _clean_href(link_tag["href"]) if link_tag else None
             desc = desc_tag.get_text(strip=True) if desc_tag else None
 
-            if title and link:
-                print(f"AD   title: {title}  --  link: {link}")
+            if title and link and desc:
+                print(f"AD   title: {title}  --  link: {link}  ")
                 results.append({
                     "searchEngine": "Google",
                     "baseUrl": BASE,
@@ -166,7 +168,7 @@ class GoogleSearchStrategy(SearchEngineStrategy):
             link = _clean_href(link_tag["href"])
             desc = desc_tag.get_text(strip=True) if desc_tag else None
 
-            if title and link:
+            if title and link and desc:
 
                 print(f"PROM title: {title}  --  link: {link}")
                 results.append({

@@ -7,6 +7,7 @@ class DataScraper:
     @staticmethod
     def get_urls(keyword : str, url_size : int):
         print(f"Getting searches for {keyword} total urls: {url_size}")
+
         request_handler = RequestHandler.RequestHandler()
 
         google_strategy = SearchEngineStrategy.GoogleSearchStrategy()
