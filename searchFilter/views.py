@@ -20,3 +20,10 @@ def index(request) :
         })
 
     return DataScraper.DataScraper.get_urls(keyword, url_size)
+
+def get_html_data(request) :
+    keyword = request.GET.get("keyword", "")
+    if keyword:
+        return DataScraper.DataScraper.get_html_from_urls(keyword=keyword)
+    else:
+        return DataScraper.DataScraper.get_html_from_urls()

@@ -9,8 +9,9 @@ class SearchEngine(models.Model):
 
 class SearchTermMapping(models.Model):
     id = models.AutoField(primary_key=True)
-    searchEngineId = models.ForeignKey(SearchEngine, on_delete=models.CASCADE)
+    searchEngineName = models.ForeignKey(SearchEngine, on_delete=models.CASCADE)
     searchTerm = models.CharField(max_length=150)
+    time_searched = models.DateTimeField()
     
 class SearchUrls(models.Model):
     id = models.AutoField(primary_key=True)
@@ -18,9 +19,11 @@ class SearchUrls(models.Model):
     desc = models.CharField(max_length=500)
     title = models.CharField(max_length=500)
     ad = models.BooleanField()
+    data_scrape_time = models.DateTimeField(null=True)
     searchTermId = models.ForeignKey(SearchTermMapping, on_delete=models.CASCADE)
 
 class UrlData(models.Model):
     id = models.AutoField(primary_key=True)
-    searchUrlsId = models.ForeignKey(SearchUrls, on_delete=models.CASCADE)
+    searchUrls = models.ForeignKey(SearchUrls, on_delete=models.CASCADE)
     count_of_appearance = models.BigIntegerField()
+    html_data = models.TextField()
