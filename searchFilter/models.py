@@ -19,6 +19,7 @@ class SearchUrls(models.Model):
     desc = models.CharField(max_length=500)
     title = models.CharField(max_length=500)
     ad = models.BooleanField()
+    promo = models.BooleanField()
     data_scrape_time = models.DateTimeField(null=True)
     searchTermId = models.ForeignKey(SearchTermMapping, on_delete=models.CASCADE)
 

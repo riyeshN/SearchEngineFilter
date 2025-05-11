@@ -102,8 +102,8 @@ class GoogleSearchStrategy(SearchEngineStrategy):
                 return parse_qs(urlparse(href).query).get("q", [href])[0]
             return href
 
-        # ── 1. organic ────────────────────────────────────────────────────────
-        for item in soup.select("#rso .yuRUbf"):
+            # ── 1. Organic results ──────────────────────────────
+        for item in soup.select(".MjjYud .yuRUbf"):
             title_tag = item.find("h3")
             link_tag = item.find("a", href=True)
             desc_tag = item.find_next("div", class_="VwiC3b")
@@ -124,23 +124,17 @@ class GoogleSearchStrategy(SearchEngineStrategy):
                     "is_promo": False,
                 })
 
-        # ── 2. ads ────────────────────────────────────────────────────────────
-        ad_selector = (
-            "#tads .uEierd, #taw .uEierd, "
-            "#tads [data-text-ad], #taw [data-text-ad], "
-            "div[aria-label='Ads'] *, div[aria-label='Sponsored'] *"
-        )
-        for item in soup.select(ad_selector):
-            title_tag = item.find("h3")
-            link_tag = item.find("a", href=True)
-            desc_tag = item.find("div", class_="MUxGbd") or item.find("div", class_="VwiC3b")
+        # ── 2. Ads ─────────────────────────────────────────
+        ad_blocks = soup.select("div[aria-label='Ads'] a.sVXRqc")
+        for a in ad_blocks:
+            title = a.get_text(strip=True)
+            link = _clean_href(a.get("href"))
+            # Try to find description in parent or next sibling
+            desc_tag = a.find_parent().find_next("div", class_="VwiC3b")
+            desc = desc_tag.get_text(strip=True) if desc_tag else ""
 
-            title = title_tag.get_text(strip=True) if title_tag else None
-            link = _clean_href(link_tag["href"]) if link_tag else None
-            desc = desc_tag.get_text(strip=True) if desc_tag else None
-
-            if title and link and desc:
-                print(f"AD   title: {title}  --  link: {link}  ")
+            if title and link:
+                print(f"AD   title: {title}  --  link: {link}")
                 results.append({
                     "searchEngine": "Google",
                     "baseUrl": BASE,
@@ -151,35 +145,41 @@ class GoogleSearchStrategy(SearchEngineStrategy):
                     "is_promo": False,
                 })
 
-        # ── 3. promos / rich blocks ───────────────────────────────────────────
-        promo_selector = (
-            ".kp-blk, .g-blk, .FLP8od, "
-            ".xpdopen, .VkpGBb, "
-            "[data-content-feature='1']"
-        )
-        for item in soup.select(promo_selector):
-            title_tag = item.find("h3")
-            link_tag = item.find("a", href=True)
-            if not (title_tag and link_tag):
-                continue
-            desc_tag = item.find("div", class_="MUxGbd") or item.find("div", class_="VwiC3b")
+        # ── 3. Promos ──────────────────────────────────────
+        promo_selectors = [".xpdopen", ".kp-blk", ".VkpGBb", ".FLP8od"]
+        for selector in promo_selectors:
+            for item in soup.select(selector):
+                # Attempt to get standard title and description
+                title_tag = item.find("h3")
+                desc_tag = item.find("div", class_="VwiC3b")
 
-            title = title_tag.get_text(strip=True)
-            link = _clean_href(link_tag["href"])
-            desc = desc_tag.get_text(strip=True) if desc_tag else None
+                # Try any anchor with a valid link
+                link_tag = item.find("a", href=True)
+                link = _clean_href(link_tag["href"]) if link_tag else None
 
-            if title and link and desc:
+                # Fallback title if no <h3>
+                title = (
+                    title_tag.get_text(strip=True) if title_tag
+                    else item.get_text(" ", strip=True).strip()
+                )
 
-                print(f"PROM title: {title}  --  link: {link}")
-                results.append({
-                    "searchEngine": "Google",
-                    "baseUrl": BASE,
-                    "title": title,
-                    "link": link,
-                    "description": desc,
-                    "is_ad": False,
-                    "is_promo": True,
-                })
+                # Fallback desc (skip if totally empty)
+                desc = (
+                    desc_tag.get_text(strip=True) if desc_tag
+                    else None
+                )
+
+                if title and link:
+                    print(f"PROM title: {title}  --  link: {link}")
+                    results.append({
+                        "searchEngine": "Google",
+                        "baseUrl": BASE,
+                        "title": title,
+                        "link": link,
+                        "description": desc or "",
+                        "is_ad": False,
+                        "is_promo": True,
+                    })
 
         return results
 
