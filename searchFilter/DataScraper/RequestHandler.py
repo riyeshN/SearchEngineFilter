@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
 class RequestHandler:
 
@@ -24,7 +25,37 @@ class RequestHandler:
 
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        driver.get(url)
-        time.sleep(2)
-        page_html = driver.page_source
-        return page_html
+        try:
+            # driver.set_page_load_timeout(30)
+            driver.get(url)
+            time.sleep(2)
+            return driver.page_source
+        except TimeoutException:
+            print(f"[TimeoutException] Failed to load {url}")
+            return "<html><body><p>Timeout</p></body></html>"
+        except WebDriverException as e:
+            print(f"[WebDriverException] Failed to load {url}: {e}")
+            return "<html><body><p>Error</p></body></html>"
+        except Exception as e:
+            print(f"[Exception] General failure loading {url}: {e}")
+            return "<html><body><p>Unknown error</p></body></html>"
+        finally:
+            driver.quit()
+
+    def get_html_without_js(self, url: str) -> str:
+        try:
+            headers = {"User-Agent": "...same UA..."}
+            response = requests.get(url, headers=headers, timeout=15)
+            response.raise_for_status()  # raises for 4xx/5xx
+            return response.text
+        except Exception as e:
+            print(f"[requests] {url} failed: {e}")
+            return ""
+
+    def get_with_fallback(self, url: str) -> str:
+        html = self.get_html_without_js(url)
+        # plain truthiness + size check
+        if html and len(html) > 1000:
+            return html
+        print("Falling back to Selenium for", url)
+        return self.get(url)

@@ -39,9 +39,14 @@ class DataScraper:
         results: List[UrlData] = []
         for row in rows:
             if not row.ad and not row.data_scrape_time:
-                html = request_handler.get(row.url)
-                url_data = DataScraper.add_html_to_table(html=html, row=row)
-                results.append(url_data)
+                try:
+                    html = request_handler.get_with_fallback(row.url)
+                    url_data = DataScraper.add_html_to_table(html=html, row=row)
+                    results.append(url_data)
+                    print(f"Appended - {row.url} - id: {row.id}")
+                except Exception as e:
+                    print(f"Failed processing row ID {row.id}, URL: {row.url}, error: {e}")
+                    continue
         return results
 
     @staticmethod
@@ -63,7 +68,7 @@ class DataScraper:
                             ) b 
                             ON a.searchTerm = b.searchTerm and a.searchEngineName_id =b.searchEngineName_id 
                             and a.time_searched = b.max_time and a.searchTerm = %s
-                )SELECT * from searchFilter_searchurls where id in (select id from ID_TO_SEARCH)
+                )SELECT * from searchFilter_searchurls where searchTermId_id in (select id from ID_TO_SEARCH) and data_scrape_time is null
             """
             latest_entry = SearchUrls.objects.raw(query, [keyword])
         else:
@@ -77,7 +82,7 @@ class DataScraper:
                             ) b 
                             ON a.searchTerm = b.searchTerm and a.searchEngineName_id =b.searchEngineName_id 
                             and a.time_searched = b.max_time 
-                    )SELECT * from searchFilter_searchurls where id in (select id from ID_TO_SEARCH)
+                    )SELECT * from searchFilter_searchurls where searchTermId_id in (select id from ID_TO_SEARCH) and data_scrape_time is null
                     """
             latest_entry = SearchUrls.objects.raw(query)
         results = []

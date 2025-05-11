@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from django.utils import timezone
 
@@ -8,16 +9,29 @@ class SearchQueryAdd:
     @staticmethod
     @transaction.atomic
     def add_url_html_data(html : str, row : SearchUrls) -> UrlData:
+
         date = timezone.now()
         row.data_scrape_time = date
         row.save(update_fields=["data_scrape_time"])
 
+        search_term = row.searchTermId.searchTerm
+        print(f"getting data for {row.url} - id: {row.id}")
+        count = SearchQueryAdd.get_count(html=html, keyword=search_term)
+
         url_data_obj, _  = UrlData.objects.get_or_create(
             searchUrls = row,
-            count_of_appearance = 2,
+            count_of_appearance = count,
             html_data = html
         )
         return url_data_obj
+
+    @staticmethod
+    def get_count(html: str, keyword: str):
+        if not html or not keyword:
+            return 0
+            # \b matches word boundaries (start or end of a word)
+        pattern = rf'\b{re.escape(keyword)}\b'
+        return len(re.findall(pattern, html, flags=re.IGNORECASE))
 
     @staticmethod
     @transaction.atomic
