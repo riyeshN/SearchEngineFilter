@@ -38,7 +38,7 @@ class DataScraper:
     def parse_list_of_searches_and_populate_url_data(rows : List[SearchUrls], request_handler) -> List[UrlData]:
         results: List[UrlData] = []
         for row in rows:
-            if not row.ad and not row.data_scrape_time:
+            if not row.ad_promo and not row.data_scrape_time:
                 try:
                     html = request_handler.get_with_fallback(row.url)
                     url_data = DataScraper.add_html_to_table(html=html, row=row)
