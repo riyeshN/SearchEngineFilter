@@ -99,11 +99,15 @@ class DataScraper:
 
         google_strategy = SearchEngineStrategy.GoogleSearchStrategy()
         bing_strategy = SearchEngineStrategy.BingSearchStrategy()
+        duckduckgo_strategy = SearchEngineStrategy.DuckDuckGoSearchStrategy()
+        yahoo_strategy = SearchEngineStrategy.YahooSearchStrategy()
 
         search_urls = SearchUrl.SearchUrls(strategy=google_strategy, request_handle=request_handler)
         search_bing_url = SearchUrl.SearchUrls(strategy=bing_strategy, request_handle=request_handler)
+        search_duckduckgo_url = SearchUrl.SearchUrls(strategy=duckduckgo_strategy, request_handle=request_handler)
+        search_yahoo_url = SearchUrl.SearchUrls(strategy=yahoo_strategy, request_handle=request_handler)
 
-        list_of_engine_search = [search_urls, search_bing_url ]
+        list_of_engine_search = [search_urls, search_bing_url, search_duckduckgo_url, search_yahoo_url]
 
         try:
             found_urls = list()
@@ -117,7 +121,8 @@ class DataScraper:
             })
         except Exception as e:
             return JsonResponse({
-                "success" : False,
+                "success": False,
                 "error": str(e)
             })
+
 

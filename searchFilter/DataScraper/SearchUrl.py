@@ -23,6 +23,19 @@ class SearchUrls:
                 url = f"{search_urls}&start={start_page}"
             if type(self.strategy) == SearchEngineStrategy.BingSearchStrategy:
                 url = f"{search_urls}&first={start_page + 1}"
+            if type(self.strategy) == SearchEngineStrategy.DuckDuckGoSearchStrategy:
+                # For first page, no parameter needed
+                if start_page == 0:
+                    url = search_urls
+                else:
+                    # DuckDuckGo HTML version uses 's' parameter with increments of 30
+                    url = f"{search_urls}&s={start_page * 3}"  # 30 results per page, adjust if needed
+
+
+###############################
+            if type(self.strategy) == SearchEngineStrategy.YahooSearchStrategy:
+                url = f"{search_urls}&first={start_page + 1}"
+
             print(f"Fetching: {url}")
             html = self.request_handle.get(url)
             page_results = self.strategy.parse_results(html)

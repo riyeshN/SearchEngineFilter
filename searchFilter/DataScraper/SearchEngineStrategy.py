@@ -70,8 +70,7 @@ class BingSearchStrategy(SearchEngineStrategy):
                         "title": title,
                         "link": link,
                         "description": desc,
-                        "is_ad": kind == "ad",
-                        "is_promo": kind == "promo",
+                        "is_ad_promo": False,
                     })
 
         return results
@@ -120,8 +119,7 @@ class GoogleSearchStrategy(SearchEngineStrategy):
                     "title": title,
                     "link": link,
                     "description": desc,
-                    "is_ad": False,
-                    "is_promo": False,
+                    "is_ad_promo": False,
                 })
 
         # ── 2. Ads ─────────────────────────────────────────
@@ -141,8 +139,7 @@ class GoogleSearchStrategy(SearchEngineStrategy):
                     "title": title,
                     "link": link,
                     "description": desc,
-                    "is_ad": True,
-                    "is_promo": False,
+                    "is_ad_promo": False,
                 })
 
         # ── 3. Promos ──────────────────────────────────────
@@ -177,9 +174,214 @@ class GoogleSearchStrategy(SearchEngineStrategy):
                         "title": title,
                         "link": link,
                         "description": desc or "",
-                        "is_ad": False,
-                        "is_promo": True,
+                        "is_ad_promo": False,
                     })
 
         return results
 
+class DuckDuckGoSearchStrategy(SearchEngineStrategy):
+    def build_search_url(self, keyword: str) -> str:
+        base_url = "https://duckduckgo.com/html/"
+        if isinstance(keyword, bytes):
+            keyword = keyword.decode('utf-8')
+        query = urllib.parse.quote_plus(keyword)
+        return f"{base_url}?q={query}"
+
+    def parse_results(self, html_content: str) -> list:
+        soup = BeautifulSoup(html_content, "html.parser")
+        results = []
+        BASE = "https://duckduckgo.com"
+
+        def _clean_href(href: Optional[str]) -> Optional[str]:
+            if not href:
+                return None
+            if href.startswith("/"):
+                href = urljoin(BASE, href)
+            if href.startswith("/l/?uddg="):
+                return unquote(href.split("uddg=")[1].split("&")[0])
+            return href
+
+        # Organic results
+        # attempt change
+        # for item in soup.select("article[data-testid='result']"):
+        #     title_tag = item.find("h2")
+        #     link_tag = title_tag.find("a", href=True) if title_tag else None
+        #     desc_tag = item.find("div", class_="C1r0kB6hBP3a4dE1jPK3dw")
+        #
+        #     title = title_tag.get_text(strip=True) if title_tag else None
+        #     link = _clean_href(link_tag["href"]) if link_tag else None
+        #     desc = desc_tag.get_text(strip=True) if desc_tag else None
+
+            # HTML version uses a simpler structure with CSS class "result"
+        for result in soup.select(".result"):
+            title_link = result.select_one(".result__a")
+            desc_elem = result.select_one(".result__snippet")
+
+            title = title_link.get_text(strip=True) if title_link else None
+            link = _clean_href(title_link["href"]) if title_link and title_link.has_attr("href") else None
+            desc = desc_elem.get_text(strip=True) if desc_elem else None
+
+            if title and link and desc:
+                print(f"ORG  title: {title}  --  link: {link}")
+                results.append({
+                    "searchEngine": "DuckDuckGo",
+                    "baseUrl": BASE,
+                    "title": title,
+                    "link": link,
+                    "description": desc,
+                    "is_ad_promo": False,
+                })
+
+        # For ads
+        for item in soup.select("div[data-testid='ad']"):
+            title_tag = item.find("a", attrs={"data-testid": "ad-title"})
+            link_tag = title_tag if title_tag else None
+            desc_tag = item.find("div", class_="ad__desc")
+
+            title = title_tag.get_text(strip=True) if title_tag else None
+            link = _clean_href(link_tag["href"]) if link_tag else None
+            desc = desc_tag.get_text(strip=True) if desc_tag else None
+
+            if title and link and desc:
+                print(f"AD   title: {title}  --  link: {link}")
+                results.append({
+                    "searchEngine": "DuckDuckGo",
+                    "baseUrl": BASE,
+                    "title": title,
+                    "link": link,
+                    "description": desc,
+                    "is_ad_promo": False,
+                })
+
+        # Promotions
+        for item in soup.select("div[data-testid='zci']"):
+            title_tag = item.find("h2")
+            link_tag = item.find("a", href=True)
+            desc_tag = item.find("div", class_="zci__content")
+
+            title = title_tag.get_text(strip=True) if title_tag else None
+            link = _clean_href(link_tag["href"]) if link_tag else None
+            desc = desc_tag.get_text(strip=True) if desc_tag else None
+
+            if title and link and desc:
+                print(f"PROM title: {title}  --  link: {link}")
+                results.append({
+                    "searchEngine": "DuckDuckGo",
+                    "baseUrl": BASE,
+                    "title": title,
+                    "link": link,
+                    "description": desc,
+                    "is_ad_promo": False,
+                })
+
+        return results
+
+
+class YahooSearchStrategy(SearchEngineStrategy):
+
+    def build_search_url(self, keyword: str) -> str:
+        base_url = "https://search.yahoo.com/search"
+        if isinstance(keyword, bytes):
+            keyword = keyword.decode('utf-8')
+        query = urllib.parse.quote_plus(keyword)
+        return f"{base_url}?p={query}"
+
+    def parse_results(self, html_content: str) -> list:
+        soup = BeautifulSoup(html_content, "html.parser")
+        results = []
+        BASE = "https://search.yahoo.com"
+
+        def _clean_href(href: Optional[str]) -> Optional[str]:
+            if not href:
+                return None
+            if href.startswith("/"):
+                href = urljoin(BASE, href)
+            if "r.search.yahoo.com" in href:
+                parts = href.split("/RU=")
+                if len(parts) > 1:
+                    return unquote(parts[1].split("/")[0])
+            return href
+
+        # Organic results
+        for item in soup.select("#web .algo"):
+            title_tag = item.find("h3")
+            link_tag = item.find("a", href=True)
+
+            # Updated selector for description - look for paragraph elements with multiple possible classes
+            desc_tag = item.find("p",
+                                 class_=lambda c: c and any(cls in c for cls in ["s-desc", "fc-dustygray", "compText"]))
+            if not desc_tag:
+                # Fallback: look for any paragraph in the item
+                desc_tag = item.find("p")
+
+            # Also try the compText div which might contain the description
+            if not desc_tag:
+                comp_text = item.find("div", class_="compText")
+                if comp_text:
+                    desc_tag = comp_text.find("p")
+
+            title = title_tag.get_text(strip=True) if title_tag else None
+            link = _clean_href(link_tag["href"]) if link_tag else None
+            desc = desc_tag.get_text(strip=True) if desc_tag else None
+
+            if title and link:  # Make description optional
+                print(f"ORG  title: {title}  --  link: {link}")
+                results.append({
+                    "searchEngine": "Yahoo",
+                    "baseUrl": BASE,
+                    "title": title,
+                    "link": link,
+                    "description": desc or "",  # Use empty string if no description
+                    "is_ad_promo": False,
+                })
+
+        # For ads - similar updates for description extraction
+        for item in soup.select("#web .ad"):
+            title_tag = item.find("h3")
+            link_tag = item.find("a", href=True)
+            desc_tag = item.find("p",
+                                 class_=lambda c: c and any(cls in c for cls in ["s-desc", "fc-dustygray", "compText"]))
+            if not desc_tag:
+                desc_tag = item.find("p")
+            if not desc_tag and item.find("div", class_="compText"):
+                desc_tag = item.find("div", class_="compText").find("p")
+
+            title = title_tag.get_text(strip=True) if title_tag else None
+            link = _clean_href(link_tag["href"]) if link_tag else None
+            desc = desc_tag.get_text(strip=True) if desc_tag else None
+
+            if title and link:
+                print(f"AD   title: {title}  --  link: {link}")
+                results.append({
+                    "searchEngine": "Yahoo",
+                    "baseUrl": BASE,
+                    "title": title,
+                    "link": link,
+                    "description": desc or "",
+                    "is_ad_promo": False,
+                })
+
+        # Promotions - similar updates for description extraction
+        for item in soup.select("#web .compArticleList, #web .compText"):
+            title_tag = item.find("h3")
+            link_tag = item.find("a", href=True)
+            desc_tag = item.find("p", class_=lambda c: c and any(cls in c for cls in ["s-desc", "fc-dustygray"]))
+            if not desc_tag:
+                desc_tag = item.find("p")
+
+            title = title_tag.get_text(strip=True) if title_tag else None
+            link = _clean_href(link_tag["href"]) if link_tag else None
+            desc = desc_tag.get_text(strip=True) if desc_tag else None
+
+            if title and link:
+                print(f"PROM title: {title}  --  link: {link}")
+                results.append({
+                    "searchEngine": "Yahoo",
+                    "baseUrl": BASE,
+                    "title": title,
+                    "link": link,
+                    "description": desc or "",
+                    "is_ad_promo": False,
+                })
+
+        return results

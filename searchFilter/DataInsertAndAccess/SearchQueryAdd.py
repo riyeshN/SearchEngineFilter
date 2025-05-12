@@ -71,8 +71,7 @@ class SearchQueryAdd:
             url = engine["link"],
             desc= engine["description"],
             title= engine["title"],
-            ad= engine["is_ad"],
-            promo = engine["is_promo"],
+            ad_promo=engine["is_ad_promo"],
             searchTermId=search_term_mapping_obj
         )
         return search_url_obj

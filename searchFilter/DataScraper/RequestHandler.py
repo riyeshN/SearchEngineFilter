@@ -16,7 +16,7 @@ class RequestHandler:
 
     def get(self, url: str) -> str:
         chrome_options = Options()
-        #chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--headless=new")
 
         chrome_options.add_argument("--disable-gpu")
         #chrome_options.add_argument("--window-size=1920,1080")
