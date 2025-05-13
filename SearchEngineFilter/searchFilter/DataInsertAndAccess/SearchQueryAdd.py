@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
 from django.utils import timezone
-
 from searchFilter.models import SearchEngine, SearchTermMapping, SearchUrls, UrlData
 from django.db import transaction
 class SearchQueryAdd:

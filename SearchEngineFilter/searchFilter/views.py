@@ -1,6 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
+from .DataInsertAndAccess.GetSQLData import GetSQLData
 from .DataScraper import DataScraper
 # Create your views here.
 def index(request) :
@@ -27,3 +28,23 @@ def get_html_data(request) :
         return DataScraper.DataScraper.get_html_from_urls(keyword=keyword)
     else:
         return DataScraper.DataScraper.get_html_from_urls()
+
+def get_list_of_links_for_keyword(request) :
+    keyword = request.GET.get("keyword", "")
+    if not keyword:
+        return JsonResponse({
+            "success": False,
+            "error": "No keyword provided"
+        })
+    try:
+        list_of_links = GetSQLData.get_list_of_links_for_keyword(keyword=keyword)
+        return JsonResponse({
+            "success": True,
+            "data": list_of_links
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": f"Exception - {e}"
+        })
+

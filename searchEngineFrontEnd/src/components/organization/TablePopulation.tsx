@@ -19,52 +19,55 @@ const TablePopulation = ({urlList}: {urlList: any[]}) => {
       }
 
     return (
-        <Stack spacing={2}>
-           <Box sx={{ width: '300px', marginLeft: 'auto', marginRight: 'auto' }}>
-                <FormControl fullWidth>
-                    <InputLabel id="engine-label">Search Engine</InputLabel>
-                    <Select
-                    labelId="engine-label"
-                    id="engine-select"
-                    value={selectedEngine}
-                    label="Search Engine"
-                    onChange={handleChange}
-                    >
-                        {searchEngines.map((engine) => (
-                            <MenuItem key={engine} value={engine}>
-                            {engine}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Box>
-            <Box sx={{ width: '95%', margin: '0 auto' }}>
-                {groupBySearchEngine.has(selectedEngine) ? (
-                    <TableContainer component={Paper} >
-                        <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                            {Object.keys(groupBySearchEngine.get(selectedEngine)![0]).map((key) => (
-                                <TableCell key={key}>{key}</TableCell>
-                            ))}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {groupBySearchEngine.get(selectedEngine)!.map((item, idx) => (
-                            <TableRow key={idx}>
-                                {Object.values(item).map((val, i) => (
-                                <TableCell key={i}>{String(val)}</TableCell>
-                                ))}
-                            </TableRow>
-                            ))}
-                        </TableBody>
-                        </Table>
-                    </TableContainer>
-                    ) : (
-                    <Typography>No data available for selected engine.</Typography>
-                )}
-            </Box>
-        </Stack>
+        <Stack sx={{ width: "100%" }} spacing={2}>
+      <Box sx={{ width: "100%" }}>
+        <FormControl fullWidth>
+          <InputLabel id="engine-label">Search Engine</InputLabel>
+          <Select
+            labelId="engine-label"
+            id="engine-select"
+            value={selectedEngine}
+            label="Search Engine"
+            onChange={handleChange}
+          >
+            {searchEngines.map((engine) => (
+              <MenuItem key={engine} value={engine}>
+                {engine}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Box sx={{ width: "100%", margin: "0 auto" }}>
+        {groupBySearchEngine.has(selectedEngine) ? (
+          <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
+            <Table size="small">
+              <TableHead sx={{ backgroundColor: 'primary.main' }}>
+                <TableRow>
+                  {Object.keys(groupBySearchEngine.get(selectedEngine)![0]).map(
+                    (key) => (
+                      <TableCell key={key} sx={{ color: 'white', fontWeight: 'bold' }}>{key}</TableCell>
+                    )
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {groupBySearchEngine.get(selectedEngine)!.map((item, idx) => (
+                  <TableRow key={idx}>
+                    {Object.values(item).map((val, i) => (
+                      <TableCell key={i}>{String(val)}</TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography>No data available for selected engine.</Typography>
+        )}
+      </Box>
+    </Stack>
     );
 }
 

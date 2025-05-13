@@ -72,9 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'searchEngineFilter.wsgi.application'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
