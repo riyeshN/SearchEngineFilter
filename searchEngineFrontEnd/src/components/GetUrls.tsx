@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Grid, TextField, Box, Stack } from "@mui/material";
 import api from "../api/api";
-import TablePopulation from "./organization/TablePopulation";
+import ShowSearches from "./organization/ShowSearches";
 
 const GetUrls = () => {
 	const [searchVal, setSearchVal] = useState("");
@@ -34,7 +34,7 @@ const GetUrls = () => {
 
 	const renderTable = () => {
 		if (listOfUrls.length > 0) {
-			return <TablePopulation urlList={listOfUrls} />;
+			return <ShowSearches urlList={listOfUrls} />;
 		} else return null;
 	};
 
