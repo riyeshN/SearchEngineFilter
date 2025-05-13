@@ -47,10 +47,16 @@ const ShowSearches = ({ urlList }: { urlList: any[] }) => {
 		window.open(url, "_blank", "noopener,noreferrer");
 	};
 
-	const filteredItems =
-		groupBySearchEngine
-			.get(selectedEngine)
-			?.filter((item) => item.ad_promo === false) || [];
+	const filteredItems = (() => {
+		const seen = new Set<string>();
+		return (groupBySearchEngine.get(selectedEngine) ?? [])
+			.filter((item) => item.ad_promo === false)
+			.filter((item) => {
+				if (seen.has(item.url)) return false;
+				seen.add(item.url);
+				return true;
+			});
+	})();
 
 	const paginatedItems = filteredItems.slice(
 		(page - 1) * itemsPerPage,
