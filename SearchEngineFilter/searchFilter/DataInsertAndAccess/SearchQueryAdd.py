@@ -95,12 +95,15 @@ class SearchQueryAdd:
 
         print(f"[{search_engine}] {ad_text}: {title}")
 
-        ##TODO: this needs to create new entry
-        search_url_obj, _ = SearchUrls.objects.get_or_create(
-            url=engine["link"],
-            desc=engine["description"],
-            title=engine["title"],
-            ad_promo=engine["ad_promo"],  # Use the flag from the engine results
-            searchTermId=search_term_mapping_obj
-        )
-        return search_url_obj
+        try:
+            ##TODO: this needs to create new entry
+            search_url_obj = SearchUrls.objects.create(
+                url=engine["link"],
+                desc=engine["description"],
+                title=engine["title"],
+                ad_promo=engine["ad_promo"],  # Use the flag from the engine results
+                searchTermId=search_term_mapping_obj
+            )
+            return search_url_obj
+        except Exception as e:
+            print(e)
