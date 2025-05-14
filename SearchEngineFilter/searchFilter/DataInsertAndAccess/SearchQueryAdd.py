@@ -95,7 +95,7 @@ class SearchQueryAdd:
 
         print(f"[{search_engine}] {ad_text}: {title}")
 
-        ##TODO: this needs to create new entry 
+        ##TODO: this needs to create new entry
         search_url_obj, _ = SearchUrls.objects.get_or_create(
             url=engine["link"],
             desc=engine["description"],

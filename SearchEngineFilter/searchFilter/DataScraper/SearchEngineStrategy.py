@@ -36,7 +36,7 @@ class GoogleSearchStrategy(SearchEngineStrategy):
         # Debug: Print counts to help diagnose if selectors are matching
         print(f"Google search results - HTML length: {len(html_content)}")
         print(f"Found {len(soup.select('.MjjYud .yuRUbf'))} organic results")
-        print(f"Found {len(soup.select('div[aria-label=\"Ads\"] a.sVXRqc'))} explicit ad results")
+        #print(f"Found {len(soup.select('div[aria-label=\"Ads\"] a.sVXRqc'))} explicit ad results")
 
         # Write a sample of the HTML to file for inspection
         try:
@@ -423,7 +423,7 @@ class DuckDuckGoSearchStrategy(SearchEngineStrategy):
         # Debug info
         print(f"DuckDuckGo search results - HTML length: {len(html_content)}")
         print(f"Found {len(soup.select('.result'))} regular results")
-        print(f"Found {len(soup.select('div[data-testid=\"ad\"]'))} explicit ads")
+        #print(f"Found {len(soup.select('div[data-testid=\"ad\"]'))} explicit ads")
 
         # This will help detect if we have the right selectors
         print(f"Page contains 'result--ad' class: {'result--ad' in html_content}")
