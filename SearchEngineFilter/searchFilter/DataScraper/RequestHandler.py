@@ -74,7 +74,7 @@ class RequestHandler:
     def get_html_without_js(self, url: str) -> str:
         try:
             headers = {"User-Agent": "...same UA..."}
-            response = requests.get(url, headers=headers, timeout=15)
+            response = requests.get(url, headers=headers, timeout=60)
             response.raise_for_status()  # raises for 4xx/5xx
             return response.text
         except Exception as e:

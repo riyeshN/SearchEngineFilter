@@ -45,7 +45,7 @@ class SearchQueryAdd:
 
         print("\n**** PROCESSING SEARCH RESULTS ****")
         print(f"Search term: {search_term}")
-
+        obj_added = []
         for curr in data:
             for engine in curr:
                 is_ad = engine.get("ad_promo", False)
@@ -61,6 +61,8 @@ class SearchQueryAdd:
                 )
                 search_url_obj = SearchQueryAdd.add_search_urls(engine=engine,
                                                                 search_term_mapping_obj=search_term_mapping_obj)
+
+                obj_added.append(search_url_obj)
 
         print(f"\n**** SEARCH SUMMARY: {total_results} total results, {total_ads} ads/promos ****\n")
 
@@ -93,6 +95,7 @@ class SearchQueryAdd:
 
         print(f"[{search_engine}] {ad_text}: {title}")
 
+        ##TODO: this needs to create new entry 
         search_url_obj, _ = SearchUrls.objects.get_or_create(
             url=engine["link"],
             desc=engine["description"],
