@@ -107,7 +107,7 @@ const GetUrls = () => {
 									stats["false"] ?? 0
 								} - Percent Ads ${(
 									(stats["true"] ?? 0) / (stats["false"] ?? 0)
-								).toFixed(2)}`}
+								).toFixed(5)}`}
 							</Typography>
 						</Grid>
 					))}
