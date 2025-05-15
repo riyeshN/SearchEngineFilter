@@ -71,3 +71,36 @@ class GetSQLData:
             ]
         return results
 
+    @staticmethod
+    def get_list_of_dups(keyword: str = None):
+        results = []
+
+        if not keyword:
+            return results
+
+        query = """
+                	WITH ID_TO_SEARCH AS (
+                        SELECT a.* from searchFilter_searchtermmapping a JOIN (
+                        SELECT searchTerm, searchEngineName_id, MAX(time_searched) AS max_time
+                        FROM searchFilter_searchtermmapping
+                        WHERE Lower(searchTerm) = %s
+                        GROUP BY searchTerm, searchEngineName_id
+                    ) b ON LOWER(a.searchTerm) = LOWER(b.searchTerm)and a.searchEngineName_id =b.searchEngineName_id 
+                        AND a.time_searched = b.max_time 
+                    ), ALL_VALUES AS (
+                        SELECT b.url , a.searchEngineName_id, count(*) as dups
+                        FROM ID_TO_SEARCH a join searchFilter_searchurls b on a.id  = b.searchTermId_id
+                        GROUP BY b.url , a.searchEngineName_id
+                        HAVING dups > 1
+                    ) SELECT * FROM ALL_VALUES
+            """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [keyword.lower()])
+            columns = [col[0] for col in cursor.description]
+            results = [
+                dict(zip(columns, row))
+                for row in cursor.fetchall()
+            ]
+        return results
+

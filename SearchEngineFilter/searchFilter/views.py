@@ -77,3 +77,23 @@ def get_list_of_ads_none_ads(request):
             "success": False,
             "error": f"Exception - {e}"
         })
+
+
+def get_list_of_dups(request):
+    keyword = request.GET.get("keyword", "")
+    if not keyword:
+        return JsonResponse({
+            "success": False,
+            "error": "No keyword provided"
+        })
+    try:
+        list_of_links = GetSQLData.get_list_of_dups(keyword=keyword)
+        return JsonResponse({
+            "success": True,
+            "data": list_of_links
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": f"Exception - {e}"
+        })
