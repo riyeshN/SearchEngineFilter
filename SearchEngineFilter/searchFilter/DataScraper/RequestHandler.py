@@ -1,4 +1,4 @@
-import requests, time
+import requests, time, random
 from selenium import webdriver
 from urllib.parse import urlparse
 from selenium.webdriver.chrome.options import Options
@@ -74,17 +74,23 @@ class RequestHandler:
     def get_html_without_js(self, url: str) -> str:
         try:
             headers = {"User-Agent": "...same UA..."}
-            response = requests.get(url, headers=headers, timeout=15)
+            response = requests.get(url, headers=headers, timeout=60)
             response.raise_for_status()  # raises for 4xx/5xx
             return response.text
         except Exception as e:
             print(f"[requests] {url} failed: {e}")
             return ""
 
-    def get_with_fallback(self, url: str) -> str:
-        html = self.get_html_without_js(url)
-        # plain truthiness + size check
-        if html and len(html) > 1000:
-            return html
-        print("Falling back to Selenium for", url)
-        return self.get(url)
+    def get_with_fallback(self, url: str):
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/122.0.0.0 Safari/537.36"
+        }
+        try:
+            time.sleep(random.uniform(1.5, 3.5))  # polite delay
+            response = requests.get(url, headers=headers, timeout=5)
+            response.raise_for_status()
+            return response.text
+        except requests.exceptions.RequestException as e:
+            raise TimeoutError(f"Failed to load {url}: {e}")

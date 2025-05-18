@@ -3,8 +3,10 @@ from django.shortcuts import render
 
 from .DataInsertAndAccess.GetSQLData import GetSQLData
 from .DataScraper import DataScraper
+
+
 # Create your views here.
-def index(request) :
+def index(request):
     keyword = request.GET.get("keyword", "")
     if not keyword:
         return JsonResponse({
@@ -22,14 +24,16 @@ def index(request) :
 
     return DataScraper.DataScraper.get_urls(keyword, url_size)
 
-def get_html_data(request) :
+
+def get_html_data(request):
     keyword = request.GET.get("keyword", "")
     if keyword:
         return DataScraper.DataScraper.get_html_from_urls(keyword=keyword)
     else:
         return DataScraper.DataScraper.get_html_from_urls()
 
-def get_list_of_links_for_keyword(request) :
+
+def get_list_of_links_for_keyword(request):
     keyword = request.GET.get("keyword", "")
     if not keyword:
         return JsonResponse({
@@ -38,6 +42,13 @@ def get_list_of_links_for_keyword(request) :
         })
     try:
         list_of_links = GetSQLData.get_list_of_links_for_keyword(keyword=keyword)
+
+        # Debug: Print ad_promo values
+        ad_count = sum(1 for link in list_of_links if link.get('ad_promo'))
+        print(f"Found {len(list_of_links)} links, {ad_count} ads/promos")
+        for link in list_of_links[:5]:  # Print the first 5 for debugging
+            print(f"Link: {link.get('title')} - ad_promo: {link.get('ad_promo')}")
+
         return JsonResponse({
             "success": True,
             "data": list_of_links
@@ -48,3 +59,41 @@ def get_list_of_links_for_keyword(request) :
             "error": f"Exception - {e}"
         })
 
+def get_list_of_ads_none_ads(request):
+    keyword = request.GET.get("keyword", "")
+    if not keyword:
+        return JsonResponse({
+            "success": False,
+            "error": "No keyword provided"
+        })
+    try:
+        list_of_links = GetSQLData.get_list_of_ads_none_ads(keyword=keyword)
+        return JsonResponse({
+            "success": True,
+            "data": list_of_links
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": f"Exception - {e}"
+        })
+
+
+def get_list_of_dups(request):
+    keyword = request.GET.get("keyword", "")
+    if not keyword:
+        return JsonResponse({
+            "success": False,
+            "error": "No keyword provided"
+        })
+    try:
+        list_of_links = GetSQLData.get_list_of_dups(keyword=keyword)
+        return JsonResponse({
+            "success": True,
+            "data": list_of_links
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": f"Exception - {e}"
+        })

@@ -10,23 +10,25 @@ from ..models import SearchUrls, UrlData
 class DataScraper:
 
     @staticmethod
-    def get_html_from_urls(keyword : str = None):
+    def get_html_from_urls(keyword: str = None):
         print(f"Getting HTML content for {keyword}")
 
         request_handler = RequestHandler.RequestHandler()
 
-        results = DataScraper.get_list_of_search_urls(keyword = keyword)
-        return_results = DataScraper.parse_list_of_searches_and_populate_url_data(rows = results, request_handler = request_handler)
+        results = DataScraper.get_list_of_search_urls(keyword=keyword)
+        return_results = DataScraper.parse_list_of_searches_and_populate_url_data(rows=results,
+                                                                                  request_handler=request_handler)
         return_val = [
             {
-                "id" : url_data.id,
+                "id": url_data.id,
                 "searchUrls": {
                     "id": url_data.searchUrls.id,
                     "url": url_data.searchUrls.url,
                     "title": url_data.searchUrls.title,
-                    "desc": url_data.searchUrls.desc
+                    "desc": url_data.searchUrls.desc,
+                    "ad_promo": url_data.searchUrls.ad_promo  # Include the ad_promo flag
                 },
-                "count" : url_data.count_of_appearance
+                "count": url_data.count_of_appearance
             } for url_data in return_results
         ]
         return JsonResponse({
@@ -35,7 +37,7 @@ class DataScraper:
         })
 
     @staticmethod
-    def parse_list_of_searches_and_populate_url_data(rows : List[SearchUrls], request_handler) -> List[UrlData]:
+    def parse_list_of_searches_and_populate_url_data(rows: List[SearchUrls], request_handler) -> List[UrlData]:
         results: List[UrlData] = []
         for row in rows:
             if not row.ad_promo and not row.data_scrape_time:
@@ -50,12 +52,12 @@ class DataScraper:
         return results
 
     @staticmethod
-    def add_html_to_table(html : str, row : SearchUrls)  -> UrlData:
+    def add_html_to_table(html: str, row: SearchUrls) -> UrlData:
         url_data = SearchQueryAdd.add_url_html_data(html=html, row=row)
         return url_data
 
     @staticmethod
-    def get_list_of_search_urls(keyword : str = None):
+    def get_list_of_search_urls(keyword: str = None):
         query = ""
         if keyword:
             query = f"""
@@ -92,7 +94,7 @@ class DataScraper:
         return results
 
     @staticmethod
-    def get_urls(keyword : str, url_size : int):
+    def get_urls(keyword: str, url_size: int):
         print(f"Getting searches for {keyword} total urls: {url_size}")
 
         request_handler = RequestHandler.RequestHandler()
@@ -111,8 +113,24 @@ class DataScraper:
 
         try:
             found_urls = list()
+            ad_promo_count = 0
+            total_count = 0
+
+            # Debug info
+            print("\n*** BEGINNING SEARCH FOR ADS/PROMOS ***\n")
+
             for curr in list_of_engine_search:
-                found_urls.append(curr.search(keyword, url_size))
+                engine_results = curr.search(keyword, url_size)
+                # Count ads/promos
+                for result in engine_results:
+                    total_count += 1
+                    if result.get("ad_promo", False):
+                        ad_promo_count += 1
+                        print(f"Found ad/promo: {result.get('title')} from {result.get('searchEngine')}")
+
+                found_urls.append(engine_results)
+
+            print(f"\n*** FOUND {ad_promo_count} ADS/PROMOS OUT OF {total_count} TOTAL RESULTS ***\n")
 
             SearchQueryAdd.add_search_results(keyword, found_urls)
             return JsonResponse({
@@ -124,5 +142,3 @@ class DataScraper:
                 "success": False,
                 "error": str(e)
             })
-
-
