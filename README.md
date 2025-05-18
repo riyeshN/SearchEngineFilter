@@ -1,4 +1,11 @@
-below is copied readme in the frontEnd code and backend code. 
+This project is a test to see how one can:
+* Search for a given keyword across multiple engines.
+* Segregate Ads and Promos.
+* Give users most relevant urls from their search across multiple search engines.
+* Show some metrics for the number of ads/promos seen across all search engines.
+  
+
+USE THE STEPS BELOW TO START THE PROJECT
 
 # DJANGO (SearchEngineFilter directory):
 
