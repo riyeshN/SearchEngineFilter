@@ -1,6 +1,6 @@
 below is copied readme in the frontEnd code and backend code. 
 
-# DJANGO:
+# DJANGO (SearchEngineFilter directory):
 
 1) Clone the project:
 2) Create venv:
@@ -12,7 +12,7 @@ below is copied readme in the frontEnd code and backend code.
 5) python manage.py migrate
 6) python manage.py runserver
 
-# REACT:
+# REACT (searchEngineFrontEnd directory):
 1) npm install
 2) npm run dev
 
